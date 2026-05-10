@@ -1,0 +1,34 @@
+model Event {
+  id              String      @id @default(cuid())
+  title           String
+  slug            String      @unique
+  description     String
+  bannerImage     String?
+  category        Category
+  type            EventType   @default(PUBLIC)
+  status          EventStatus @default(DRAFT)
+  price           Decimal     @default("0") @db.Decimal(10, 2)
+  isPaid          Boolean     @default(false)
+  location        String
+  address         String?
+  latitude        Decimal?    @db.Decimal(10, 8)
+  longitude       Decimal?    @db.Decimal(11, 8)
+  startDate       DateTime
+  endDate         DateTime?
+  maxParticipants Int?
+  organizerId     String
+  organizer       User        @relation("OrganizedEvents", fields: [organizerId], references: [id], onDelete: Cascade)
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  participations Participation[]
+  invitations    Invitation[]
+  reviews        Review[]
+  payments       Payment[]
+
+  @@index([organizerId])
+  @@index([status])
+  @@index([category])
+  @@index([startDate])
+  @@index([type])
+}

@@ -1,0 +1,40 @@
+import { Router } from 'express';
+import { authenticate } from '../../middleware/authenticate';
+import { authorize } from '../../middleware/authorize';
+import { cacheEvents } from '../../middleware/cache';
+import {
+  getEvents,
+  getEventBySlugController,
+  createEventController,
+  updateEventController,
+  deleteEventController,
+  publishEventController,
+  joinEvent,
+  updateParticipant,
+  getParticipants,
+  createReviewController,
+  getReviewsController,
+} from './event.controller';
+
+export const eventRoutes = Router();
+
+// Public
+eventRoutes.get('/', cacheEvents(60), getEvents);
+eventRoutes.get('/:slug', getEventBySlugController);
+
+// Protected - create requires ORGANIZER or ADMIN
+eventRoutes.post('/', authenticate, authorize('ADMIN', 'ORGANIZER'), createEventController);
+
+// Protected - owner or ADMIN
+eventRoutes.put('/:id', authenticate, updateEventController);
+eventRoutes.patch('/:id/publish', authenticate, publishEventController);
+eventRoutes.delete('/:id', authenticate, deleteEventController);
+
+// Participation
+eventRoutes.post('/:id/join', authenticate, joinEvent);
+eventRoutes.get('/:id/participants', authenticate, getParticipants);
+eventRoutes.patch('/:id/participants/:userId', authenticate, updateParticipant);
+
+// Reviews
+eventRoutes.post('/:id/reviews', authenticate, createReviewController);
+eventRoutes.get('/:id/reviews', getReviewsController);

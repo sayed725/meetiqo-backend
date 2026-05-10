@@ -1,0 +1,16 @@
+model Participation {
+  id       String              @id @default(cuid())
+  userId   String
+  eventId  String
+  status   ParticipationStatus @default(PENDING)
+  joinedAt DateTime            @default(now())
+  role     ParticipationRole   @default(ATTENDEE)
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, eventId])
+  @@index([userId])
+  @@index([eventId])
+  @@index([status])
+}

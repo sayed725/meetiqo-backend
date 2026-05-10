@@ -1,0 +1,69 @@
+enum UserRole {
+  ADMIN
+  ORGANIZER
+  USER
+}
+
+enum Category {
+  TECH
+  MUSIC
+  BUSINESS
+  HEALTH
+  SPORTS
+  ART
+  EDUCATION
+  SOCIAL
+  OTHER
+}
+
+enum EventType {
+  PUBLIC
+  PRIVATE
+}
+
+enum EventStatus {
+  DRAFT
+  PUBLISHED
+  CANCELLED
+  COMPLETED
+}
+
+enum ParticipationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  LEFT
+}
+
+enum ParticipationRole {
+  ATTENDEE
+  ORGANIZER
+}
+
+enum InvitationStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+}
+
+enum NotificationType {
+  JOIN_REQUEST
+  INVITATION
+  EVENT_UPDATE
+  REVIEW
+  SYSTEM
+}
+
+enum AIFeatureType {
+  DESCRIPTION
+  RECOMMENDATION
+  PLANNER
+  SUMMARIZER
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  REFUNDED
+  FAILED
+}
