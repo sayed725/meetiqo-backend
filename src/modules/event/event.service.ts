@@ -25,6 +25,12 @@ function buildWhere(query: Record<string, any>) {
   if (query.type) where.type = query.type;
   if (query.isPaid !== undefined) where.isPaid = query.isPaid === 'true';
   if (query.startDate) where.startDate = { gte: new Date(query.startDate) };
+  if (query.ids) {
+    const idsArray = query.ids.split(',').map((id: string) => id.trim()).filter(Boolean);
+    if (idsArray.length > 0) {
+      where.id = { in: idsArray };
+    }
+  }
 
   return where;
 }
@@ -81,6 +87,28 @@ export async function getEventsList(query: Record<string, any>) {
   return { events, total, page, totalPages: Math.ceil(total / limit) };
 }
 
+export async function getMyEvents(organizerId: string, query: Record<string, any>) {
+  const page = Math.max(1, parseInt(query.page as string) || 1);
+  const limit = Math.min(50, Math.max(1, parseInt(query.limit as string) || 12));
+  const skip = (page - 1) * limit;
+
+  const where: any = { organizerId };
+  if (query.status) {
+    where.status = query.status;
+  }
+
+  const total = await prisma.event.count({ where });
+  const events = await prisma.event.findMany({
+    where,
+    include: includeDefault,
+    orderBy: { createdAt: 'desc' },
+    skip,
+    take: limit,
+  });
+
+  return { events, total, page, totalPages: Math.ceil(total / limit) };
+}
+
 export async function getEventBySlug(slug: string) {
   const event = await prisma.event.findUnique({
     where: { slug },
@@ -118,7 +146,7 @@ export async function createEvent(data: CreateEventInput, organizerId: string) {
       ...data,
       slug: generateSlug(data.title),
       organizerId,
-      status: 'PUBLISHED',
+      status: data.status || 'DRAFT',
       isPaid: data.price > 0,
     },
     include: includeDefault,

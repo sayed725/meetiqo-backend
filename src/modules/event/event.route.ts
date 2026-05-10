@@ -4,6 +4,7 @@ import { authorize } from '../../middleware/authorize';
 import { cacheEvents } from '../../middleware/cache';
 import {
   getEvents,
+  getMyEventsController,
   getEventBySlugController,
   createEventController,
   updateEventController,
@@ -21,6 +22,9 @@ export const eventRoutes = Router();
 // Public
 eventRoutes.get('/', cacheEvents(60), getEvents);
 eventRoutes.get('/:slug', getEventBySlugController);
+
+// Protected - me
+eventRoutes.get('/me/all', authenticate, authorize('ADMIN', 'ORGANIZER'), getMyEventsController);
 
 // Protected - create requires ORGANIZER or ADMIN
 eventRoutes.post('/', authenticate, authorize('ADMIN', 'ORGANIZER'), createEventController);

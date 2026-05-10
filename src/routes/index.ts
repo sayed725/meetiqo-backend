@@ -5,6 +5,8 @@ import { aiRoutes } from '../modules/ai/ai.route';
 import { notificationRoutes } from '../modules/notification/notification.route';
 import { invitationRoutes } from '../modules/invitation/invitation.route';
 import { contactRoutes } from '../modules/contact/contact.route';
+import { analyticsRoutes } from '../modules/analytics/analytics.route';
+import { adminRoutes } from '../modules/admin/admin.route';
 
 export const router = Router();
 
@@ -14,3 +16,5 @@ router.use('/ai', aiRoutes);
 router.use('/invitations', invitationRoutes);
 router.use('/notifications', notificationRoutes);
 router.use('/contact', contactRoutes);
+router.use('/analytics', analyticsRoutes);
+router.use('/admin', adminRoutes);

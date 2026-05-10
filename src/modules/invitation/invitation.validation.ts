@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 export const createInvitationSchema = z.object({
-  receiverId: z.string().min(1),
+  email: z.string().email(),
   message: z.string().optional(),
 });
 

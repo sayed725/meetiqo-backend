@@ -10,6 +10,7 @@ import {
 } from './event.validation';
 import {
   getEventsList,
+  getMyEvents,
   getEventBySlug,
   createEvent,
   getEventOwner,
@@ -31,6 +32,11 @@ import {
 export async function getEvents(req: Request, res: Response) {
   const result = await getEventsList(req.query);
   logger.info({ page: result.page, limit: 12, total: result.total, sortBy: req.query.sortBy }, 'Fetched events list');
+  res.json({ success: true, data: result });
+}
+
+export async function getMyEventsController(req: Request, res: Response) {
+  const result = await getMyEvents(req.user!.id, req.query);
   res.json({ success: true, data: result });
 }
 

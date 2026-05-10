@@ -1,6 +1,7 @@
 import type { Request, Response } from 'express';
 import { logger } from '../../lib/logger';
 import { createAndNotify } from '../../lib/notifications';
+import { prisma } from '../../lib/prisma';
 import { createInvitationSchema, respondInvitationSchema } from './invitation.validation';
 import {
   getEventForInvitation,
@@ -20,8 +21,15 @@ export async function createInvitationController(req: Request, res: Response) {
     return;
   }
 
-  const { receiverId, message } = parse.data;
+  const { email, message } = parse.data;
   const eventId = req.params.id;
+
+  const receiver = await prisma.user.findUnique({ where: { email } });
+  if (!receiver) {
+    res.status(404).json({ success: false, message: 'User not found with this email' });
+    return;
+  }
+  const receiverId = receiver.id;
 
   const event = await getEventForInvitation(eventId);
   if (!event) {

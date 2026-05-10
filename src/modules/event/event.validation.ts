@@ -15,6 +15,7 @@ export const createEventSchema = z.object({
   price: z.number().min(0).default(0),
   bannerImage: z.string().url().optional(),
   tags: z.array(z.string().max(50)).max(10).optional(),
+  status: z.enum(['DRAFT', 'PUBLISHED']).optional(),
 });
 
 export const updateEventSchema = createEventSchema.partial();
