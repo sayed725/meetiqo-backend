@@ -15,6 +15,7 @@ export const userSelect = {
   isVerified: true,
   isBanned: true,
   createdAt: true,
+  updatedAt: true,
 } as const;
 
 const userSelectWithPassword = {
