@@ -111,7 +111,33 @@ ${upcomingEvents.map((e) => `- ID: ${e.id}, Title: "${e.title}", Category: ${e.c
 `;
 
   const raw = await callGemini(prompt);
-  const result = JSON.parse(raw);
+  const cleanRaw = raw.replace(/```json/gi, '').replace(/```/g, '').trim();
+  
+  let parsed = { recommendedEventIds: [], reasoning: 'AI recommendation unavailable' };
+  try {
+    parsed = JSON.parse(cleanRaw);
+  } catch (err) {
+    logger.error({ err, cleanRaw }, 'Failed to parse Gemini response');
+  }
+
+  const eventIds = Array.isArray(parsed.recommendedEventIds) ? parsed.recommendedEventIds : [];
+
+  const recommendedEvents = await prisma.event.findMany({
+    where: { id: { in: eventIds } },
+    include: {
+      organizer: {
+        select: { name: true, avatar: true },
+      },
+      _count: {
+        select: { participations: true },
+      },
+    },
+  });
+
+  const result = {
+    events: recommendedEvents,
+    reasoning: parsed.reasoning,
+  };
 
   await logAIHistory(userId, 'RECOMMENDATION', { userCategories, upcomingCount: upcomingEvents.length }, result, 1);
 

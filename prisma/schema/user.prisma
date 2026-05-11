@@ -11,6 +11,7 @@ model User {
   updatedAt  DateTime @updatedAt
 
   organizedEvents     Event[]         @relation("OrganizedEvents")
+  savedEvents         Event[]         @relation("SavedEvents")
   participations      Participation[]
   sentInvitations     Invitation[]    @relation("SentInvitations")
   receivedInvitations Invitation[]    @relation("ReceivedInvitations")

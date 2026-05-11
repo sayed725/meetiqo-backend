@@ -25,6 +25,7 @@ model Event {
   invitations    Invitation[]
   reviews        Review[]
   payments       Payment[]
+  savedBy        User[]          @relation("SavedEvents")
 
   @@index([organizerId])
   @@index([status])
