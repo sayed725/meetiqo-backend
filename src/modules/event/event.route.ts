@@ -15,6 +15,9 @@ import {
   getParticipants,
   createReviewController,
   getReviewsController,
+  saveEventController,
+  unsaveEventController,
+  getUserStatusController,
 } from './event.controller';
 
 export const eventRoutes = Router();
@@ -38,6 +41,11 @@ eventRoutes.delete('/:id', authenticate, deleteEventController);
 eventRoutes.post('/:id/join', authenticate, joinEvent);
 eventRoutes.get('/:id/participants', authenticate, getParticipants);
 eventRoutes.patch('/:id/participants/:userId', authenticate, updateParticipant);
+
+// Saved Events & User Status
+eventRoutes.post('/:id/save', authenticate, saveEventController);
+eventRoutes.delete('/:id/save', authenticate, unsaveEventController);
+eventRoutes.get('/:id/user-status', authenticate, getUserStatusController);
 
 // Reviews
 eventRoutes.post('/:id/reviews', authenticate, createReviewController);

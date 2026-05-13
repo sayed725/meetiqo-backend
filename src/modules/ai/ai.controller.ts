@@ -65,3 +65,13 @@ export async function summarizeReviews(req: Request, res: Response) {
     res.status(500).json({ success: false, message: 'AI service error' });
   }
 }
+
+export async function getEventInsightsController(req: Request, res: Response) {
+  try {
+    const result = await import('./ai.service').then(m => m.generateEventInsights(req.params.id, req.user!.id));
+    res.json({ success: true, data: result });
+  } catch (err) {
+    logger.error({ err, userId: req.user!.id, eventId: req.params.id }, 'getEventInsights failed');
+    res.status(500).json({ success: false, message: 'AI service error' });
+  }
+}

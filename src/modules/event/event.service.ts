@@ -284,3 +284,25 @@ export async function getReviewsByEvent(eventId: string, query: Record<string, a
     totalPages: Math.ceil(total / limit),
   };
 }
+
+export async function saveEventToUser(userId: string, eventId: string) {
+  return prisma.user.update({
+    where: { id: userId },
+    data: { savedEvents: { connect: { id: eventId } } },
+  });
+}
+
+export async function unsaveEventFromUser(userId: string, eventId: string) {
+  return prisma.user.update({
+    where: { id: userId },
+    data: { savedEvents: { disconnect: { id: eventId } } },
+  });
+}
+
+export async function checkEventSaved(userId: string, eventId: string) {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    include: { savedEvents: { where: { id: eventId }, select: { id: true } } },
+  });
+  return (user?.savedEvents?.length || 0) > 0;
+}

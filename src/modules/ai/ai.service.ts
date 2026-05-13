@@ -46,7 +46,8 @@ Event Details:
 `;
 
   const raw = await callGemini(prompt);
-  const result = JSON.parse(raw);
+  const cleanRaw = raw.replace(/```json/gi, '').replace(/```/g, '').trim();
+  const result = JSON.parse(cleanRaw);
   await logAIHistory(userId, 'DESCRIPTION', data, result, 1);
   return result;
 }
@@ -182,7 +183,8 @@ Event Details:
 `;
 
   const raw = await callGemini(prompt);
-  const result = JSON.parse(raw);
+  const cleanRaw = raw.replace(/```json/gi, '').replace(/```/g, '').trim();
+  const result = JSON.parse(cleanRaw);
 
   await logAIHistory(userId, 'PLANNER', data, result, 1);
   return result;
@@ -219,9 +221,60 @@ ${reviews.map((r) => `- Rating: ${r.rating}/5, Comment: "${r.comment || 'No comm
 `;
 
   const raw = await callGemini(prompt);
-  const result = JSON.parse(raw);
+  const cleanRaw = raw.replace(/```json/gi, '').replace(/```/g, '').trim();
+  const result = JSON.parse(cleanRaw);
   result.averageRating = avgRating;
 
   await logAIHistory(userId, 'SUMMARIZER', { eventId, reviewCount: reviews.length }, result, 1);
+  return result;
+}
+
+export async function generateEventInsights(eventId: string, userId: string) {
+  const cacheKey = `insights:${eventId}`;
+  const cached = await redis.get(cacheKey);
+  if (cached) {
+    return JSON.parse(cached);
+  }
+
+  const event = await prisma.event.findUnique({
+    where: { id: eventId },
+    include: {
+      _count: { select: { participations: true, reviews: true } }
+    }
+  });
+
+  if (!event) throw new Error('Event not found');
+
+  const prompt = `
+You are an AI event analyst. Provide insights for the following event.
+Return ONLY a valid JSON object with this exact structure:
+{
+  "summary": string (a short 2-3 sentence overview of the event's appeal),
+  "predictedAttendance": string (e.g. "High", "Medium", "Low"),
+  "confidence": string (e.g. "85%"),
+  "suggestions": string[] (3 actionable tips for the organizer)
+}
+
+Event Details:
+- Title: ${event.title}
+- Category: ${event.category}
+- Type: ${event.type}
+- Price: ${event.isPaid ? '$' + event.price : 'Free'}
+- Current Participants: ${event._count.participations}
+- Number of Reviews: ${event._count.reviews}
+`;
+
+  const raw = await callGemini(prompt);
+  const cleanRaw = raw.replace(/```json/gi, '').replace(/```/g, '').trim();
+  const result = JSON.parse(cleanRaw);
+
+  await logAIHistory(userId, 'SUMMARIZER', { eventId }, result, 1);
+
+  try {
+    await redis.setex(cacheKey, 3600, JSON.stringify(result));
+  } catch (err) {
+    logger.warn({ err }, 'Redis cache write failed');
+  }
+
   return result;
 }

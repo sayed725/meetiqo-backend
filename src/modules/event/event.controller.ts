@@ -27,6 +27,9 @@ import {
   getUserReview,
   createReview,
   getReviewsByEvent,
+  saveEventToUser,
+  unsaveEventFromUser,
+  checkEventSaved,
 } from './event.service';
 
 export async function getEvents(req: Request, res: Response) {
@@ -226,11 +229,26 @@ export async function updateParticipant(req: Request, res: Response) {
 
 export async function getParticipants(req: Request, res: Response) {
   const organizerId = await getEventOwner(req.params.id);
-  if (!organizerId) {
+  const eventForJoin = await getEventForJoin(req.params.id);
+
+  if (!organizerId || !eventForJoin) {
     res.status(404).json({ success: false, message: 'Event not found' });
     return;
   }
-  if (organizerId !== req.user!.id && req.user!.role !== 'ADMIN') {
+
+  const isOrganizer = organizerId === req.user!.id;
+  const isAdmin = req.user!.role === 'ADMIN';
+  const isPublic = eventForJoin.type === 'PUBLIC';
+
+  let isApprovedParticipant = false;
+  if (!isOrganizer && !isAdmin) {
+    const participation = await getUserParticipation(req.user!.id, req.params.id);
+    if (participation?.status === 'APPROVED') {
+      isApprovedParticipant = true;
+    }
+  }
+
+  if (!isOrganizer && !isAdmin && !isPublic && !isApprovedParticipant) {
     res.status(403).json({ success: false, message: 'Not authorized' });
     return;
   }
@@ -238,7 +256,7 @@ export async function getParticipants(req: Request, res: Response) {
   const participants = await getParticipantsByEvent(req.params.id);
   logger.info({ eventId: req.params.id }, 'Fetched participants');
 
-  res.json({ success: true, data: participants });
+  res.json({ success: true, data: { participants } });
 }
 
 // Review controllers
@@ -288,4 +306,20 @@ export async function createReviewController(req: Request, res: Response) {
 export async function getReviewsController(req: Request, res: Response) {
   const result = await getReviewsByEvent(req.params.id, req.query);
   res.json({ success: true, data: result });
+}
+
+export async function saveEventController(req: Request, res: Response) {
+  await saveEventToUser(req.user!.id, req.params.id);
+  res.json({ success: true, message: 'Event saved' });
+}
+
+export async function unsaveEventController(req: Request, res: Response) {
+  await unsaveEventFromUser(req.user!.id, req.params.id);
+  res.json({ success: true, message: 'Event unsaved' });
+}
+
+export async function getUserStatusController(req: Request, res: Response) {
+  const participation = await getUserParticipation(req.user!.id, req.params.id);
+  const isSaved = await checkEventSaved(req.user!.id, req.params.id);
+  res.json({ success: true, data: { participation, isSaved } });
 }
