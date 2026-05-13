@@ -1,11 +1,11 @@
 import { prisma } from '../../lib/prisma';
 
 export async function getAdminStats() {
-  const [totalUsers, totalEvents, activeSessions] = await Promise.all([
+  const [totalUsers, totalEvents] = await Promise.all([
     prisma.user.count(),
     prisma.event.count(),
-    prisma.session.count({ where: { expiresAt: { gt: new Date() } } }).catch(() => 0), // fallback if session model doesn't exist
   ]);
+  const activeSessions = 0; // Session model not in schema
 
   const participations = await prisma.participation.findMany({
     where: { status: 'APPROVED' },

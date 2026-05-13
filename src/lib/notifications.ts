@@ -1,14 +1,15 @@
 import { Server } from 'socket.io';
 import { prisma } from './prisma';
 import { logger } from './logger';
+import type { NotificationType, Prisma } from '@prisma/client';
 
 export async function createAndNotify(
   io: Server | undefined,
   userId: string,
-  type: string,
+  type: NotificationType,
   title: string,
   body: string,
-  metadata?: Record<string, unknown>
+  metadata?: Prisma.InputJsonValue
 ) {
   try {
     const notification = await prisma.notification.create({
