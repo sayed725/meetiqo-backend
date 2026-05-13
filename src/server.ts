@@ -58,6 +58,11 @@ export function createServer() {
   app.use(globalLimiter);
   app.use('/api/auth', authLimiter);
 
+  // Root route for Railway health checks & quick status
+  app.get('/', (_req, res) => {
+    res.json({ name: 'Meetiqo API', status: 'running', version: '1.0.0' });
+  });
+
   app.use('/api', router);
 
   app.get('/api/health', (_req, res) => {
